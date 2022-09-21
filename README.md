@@ -2,7 +2,7 @@
 
 <!--- credit to Tempest & the community. --->
 
-## version `0.2` as of 12 Jan 2020
+## version `0.3` as of 10th May 2021
 
 T-code is a protocol for implementing UART serial communications to an adult toy. It is partly influenced by G-code, which is an alphanumeric format used to drive CNC machines, including 3D-printers.
 
@@ -21,7 +21,7 @@ The default configuration for a Multi Axis Stroker Robot (or "MAxSR") is as foll
 
 - Linear motions in three axes:
 
-  - `L0` is positive relative to the user
+  - `L0` is positive up relative to the user
   - `L1` is positive moving away from the user
   - `L2` is positive moving to the user's left
 
@@ -108,6 +108,22 @@ Device Commands currently available:
 | `D0`    | Identify device & firmware version                        |
 | `D1`    | Identify TCode version                                    |
 | `D2`    | List available axes and associated user range preferences |
+| `DSTOP` | Stop device                                               |
+
+### Save commands
+
+To save a user's preferences to the EEPROM on the OSR2/SR6 on an axis-by-axis basis a save command can be used. These commands are prefixed by the symbol "$".
+
+These take the form `$TX-YYYY-ZZZZ`
+
+Where:
+`T` is the axis type (`L`, `R`, `V`, `A`)
+`X` is the axis number (`0`-`9`)
+`YYYY` is the preferred minimum (`0000`-`9999`)
+`ZZZZ` is the preferred maximum (`0000`-`9999`)
+
+Note that saved preferences do not change the behaviour of the device itself. They exist as a reference for the driving app or plugin, accessed via the D2 command.
+
 
 <!---Images/Resources--->
 
