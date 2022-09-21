@@ -103,9 +103,11 @@ Additional instructions to and from the device can be controlled through a prede
 
 Device Commands currently available:
 
-| Command | Action                 |
-| ------- | ---------------------- |
-| `D1`    | Identify TCode version |
+| Command | Action                                                    |
+| ------- | --------------------------------------------------------- |
+| `D0`    | Identify device & firmware version                        |
+| `D1`    | Identify TCode version                                    |
+| `D2`    | List available axes and associated user range preferences |
 
 <!---Images/Resources--->
 
