@@ -117,9 +117,13 @@ To save a user's preferences to the EEPROM on the OSR2/SR6 on an axis-by-axis ba
 These take the form `$TX-YYYY-ZZZZ`
 
 Where:
+
 `T` is the axis type (`L`, `R`, `V`, `A`)
+
 `X` is the axis number (`0`-`9`)
+
 `YYYY` is the preferred minimum (`0000`-`9999`)
+
 `ZZZZ` is the preferred maximum (`0000`-`9999`)
 
 Note that saved preferences do not change the behaviour of the device itself. They exist as a reference for the driving app or plugin, accessed via the D2 command.
