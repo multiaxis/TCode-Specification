@@ -110,7 +110,7 @@ Device Commands currently available:
 | `D2`    | List available axes and associated user range preferences |
 | `DSTOP` | Stop device                                               |
 
-### Save commands
+## Save commands
 
 To save a user's preferences to the EEPROM on the OSR2/SR6 on an axis-by-axis basis a save command can be used. These commands are prefixed by the symbol "$".
 
