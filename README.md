@@ -2,7 +2,7 @@
 
 <!--- credit to Tempest & the community. --->
 
-## version `0.3` as of 10th May 2021
+## version `0.5` as of 22th September 2022
 
 T-code is a protocol for implementing UART serial communications to an adult toy. It is partly influenced by G-code, which is an alphanumeric format used to drive CNC machines, including 3D-printers.
 
@@ -12,7 +12,7 @@ Commands are sent to the device in the form of alphanumeric ASCII phrases, which
 
 ## Axes Conventions
 
-The range of each axis is `[0, 1)`.
+The range of each axis is `[0, 1]`.
 
 - the minimum position for each axis is `0`
 - the maximum position is `0.9999...`
@@ -83,6 +83,17 @@ Using `S` (or `s`) allows the effect to be ramped at a speed of `£££` per hun
 
 As with time interval, the channel ramps to the specified level and continues at that level until given further instructions.
 
+#### Advanced Ramp Types
+
+Advanced commands can be augmented by using the ramp type commands these control the type of easing function used between the target value and current value.
+
+Using `<` means ease in whereas `>` means ease out these can be combined together to produce ease in out `<>` which is both of the functions combined there is also linear which is the default which can be specified using `=`
+
+| Command     | Axis    | Channel | Effect                                  |
+| ----------- | ------- | :-----: | --------------------------------------- |
+| `R11I01>` | Rotation |   `1`   | Ramp to `0.1` over `100` milliseconds with an ease out ramp type |
+| `L020S10<>`   | Linear  |   `0`   | Ramp to `0.2` at a rate of `0.1`/sec with an ease in out ramp type |
+
 ## Multiple Channels
 
 Multiple channels can be operated in parallel, and will do so independently of each other.
@@ -127,6 +138,20 @@ Where:
 `ZZZZ` is the preferred maximum (`0000`-`9999`)
 
 Note that saved preferences do not change the behaviour of the device itself. They exist as a reference for the driving app or plugin, accessed via the D2 command.
+
+
+
+## External Device Commands
+
+To provide device specific commands this can be used to pass commands from TCode to another parser within the device to allow for additional functionality it is prefixed with `#`
+
+any text after this is passed to a callback within the device which can then be processed.
+
+to allow for spaces within TCode the use of opening and closing brackets allows for this anything within these will be treated as text and spaces will be allowed `[` `]`
+
+These can take the form `#...`
+
+e.g. `#SetLight:FF`,`#wifissid:[test name]`
 
 
 <!---Images/Resources--->
