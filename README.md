@@ -2,7 +2,7 @@
 
 <!--- credit to Tempest & the community. --->
 
-## version `0.5` as of 22th September 2022
+## version `0.4` as of <Needs Date>
 
 T-code is a protocol for implementing UART serial communications to an adult toy. It is partly influenced by G-code, which is an alphanumeric format used to drive CNC machines, including 3D-printers.
 
@@ -120,6 +120,25 @@ Device Commands currently available:
 | `D1`    | Identify TCode version                                    |
 | `D2`    | List available axes and associated user range preferences |
 | `DSTOP` | Stop device                                               |
+
+
+Results from the `D2` command should be formatted as below
+
+`TX-NAME-YYYY-ZZZZ\n`
+
+Where:
+
+`T` is the axis type (`L`, `R`, `V`, `A`)
+
+`X` is the axis number (`0`-`9`)
+
+`NAME` is the name of the axis as formatted in code by the implementer
+
+`YYYY` is the preferred minimum (`0000`-`9999`)
+
+`ZZZZ` is the preferred maximum (`0000`-`9999`)
+
+a new line delimits the returned values
 
 ## Save commands
 
