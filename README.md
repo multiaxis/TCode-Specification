@@ -2,7 +2,7 @@
 
 <!--- credit to Tempest & the community. --->
 
-## version `0.4` as of <Needs Date>
+## version `0.4` as of tbd<Needs Date>
 
 T-code is a protocol for implementing UART serial communications to an adult toy. It is partly influenced by G-code, which is an alphanumeric format used to drive CNC machines, including 3D-printers.
 
@@ -94,6 +94,8 @@ Using `<` means ease in whereas `>` means ease out these can be combined togethe
 | `R11I01>` | Rotation |   `1`   | Ramp to `0.1` over `100` milliseconds with an ease out ramp type |
 | `L020S10<>`   | Linear  |   `0`   | Ramp to `0.2` at a rate of `0.1`/sec with an ease in out ramp type |
 
+The ramp types are implemented using cubic interpolation where ramp-in uses t*t and ramp-out uses the inverse, ramp-inout uses a lerp between these two values to get the smoothed easing function. 
+
 ## Multiple Channels
 
 Multiple channels can be operated in parallel, and will do so independently of each other.
@@ -166,11 +168,24 @@ To provide device specific commands this can be used to pass commands from TCode
 
 any text after this is passed to a callback within the device which can then be processed.
 
-to allow for spaces within TCode the use of opening and closing brackets allows for this anything within these will be treated as text and spaces will be allowed `[` `]`
+to allow for spaces within TCode the use of opening and closing brackets allows for this anything within these will be treated as text and spaces will be allowed `"` `"`
 
 These can take the form `#...`
 
-e.g. `#SetLight:FF`,`#wifissid:[test name]`
+e.g. `#SetLight:FF`,`#wifissid:"test name"`,`#Sleep`
+
+
+## Buttons/Output Devices
+
+TCode allows for devices to communicate back to the controller as well for temprature sensing or providing feedback as a tag value system this is prefixed with '#'
+
+Where returned values can be in the format:
+
+#\<TAG\>:\<VALUE\>
+
+Tag is a string
+
+Value can be in the range 0 >
 
 
 <!---Images/Resources--->
