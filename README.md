@@ -111,7 +111,11 @@ Gradient or `G` commands initiate cubic spline based movements. They obey the sa
 
 The `G` arrival velocity number can be positive or negative and has the same units as the `S` parameter described above - a speed of `1000` will run one axis length in 1 second.
 
- - eg `L09999I2000G-1000` - linear channel 0 to magnitude 0.9999 over 2000 ms, arriving with a velocity of -1000.
+eg `L09999I2000G-1000` - linear channel 0 to magnitude 0.9999 over 2000 ms, arriving with a velocity of -1000.
+
+For most scripts the points represent turning points where motion stops and returns in the opposite direction, so practically speaking most `G` commands will be `G0`.
+
+eg `R08I500G0` - rotation channel 0 to magnitude 0.8 over 500 ms, arriving with a velocity of 0.
 
 If a "G" commanded movement with a non-zero value reaches the end of its movement and no further command has been received the axis enters an automatic deceleration phase, continuing at the current velocity but decelerating and returning to rest at the last commanded point over approximately two seconds. There is never an abrupt end to a "G" movement, so it is therefore not necessary to ensure that commands overlap with previous commands. On the scale of tens of milliseconds a gap between end of movement and a new command arriving are completely unnoticeable.
 
