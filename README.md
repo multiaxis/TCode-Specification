@@ -2,13 +2,15 @@
 
 <!--- credit to Tempest & the community. --->
 
-## version `0.3` as of 10th May 2021
+## version `0.4` as of 12th October 2026
 
 T-code is a protocol for implementing UART serial communications to an adult toy. It is partly influenced by G-code, which is an alphanumeric format used to drive CNC machines, including 3D-printers.
 
 The toy or “device” will be capable of one or more functions, which are described as Linear motion, Vibration or Rotation “channels”, which can be addressed independently.
 
 Commands are sent to the device in the form of alphanumeric ASCII phrases, which are interpreted by the device, stored in a buffer and executed on the receipt of new line or `/n` character.
+
+Version 0.4 extends version 0.3 with support for smooth motion terms that enable cubic-spline and quadratic motion profiles, improving smoothness when chaining movements.
 
 ## Axes Conventions
 
@@ -34,7 +36,7 @@ Visually:
 
 ## Basic Command Syntax
 
-Basic commands for **L**inear move, **R**otate, and **V**ibrate take the form of a letter (`L`, `R`, or `V`) followed by a set of digits. Lower case letters (`l`, `r`, `v`) are also valid.
+Basic or "short" commands for **L**inear move, **R**otate, **V**ibrate, **A**uxiliary take the form of a letter (`L`, `R`, `V`, or `A`) followed by a set of digits. Lower case letters (`l`, `r`, `v`, `a`) are also valid.
 
 ### Example Basic Commands
 
@@ -50,11 +52,11 @@ The first digit `&` represents the channel ID (e.g. `0`-`9`).
 
 Any subsequent digits (in this case `$$`) are the magnitude.
 
-The magnitude for any channel is always a number greater than or equal to `0.0` and strictly less than `1.0`. The magnitude digits are therefore effectively the digits following a `0.____`.
+The magnitude for any channel is always a number greater than or equal to `0.0` and strictly less than `1.0`. The digits follow a leading decimal point that is omitted; they are effectively the fractional part after `0.`.
 
-The magnitude corresponds to a linear position/speed, rotation position/speed, or vibration level. In situations where position or speed is possible in a forward or reverse direction 0.5 is assumed to be central or at rest.
+The magnitude corresponds to a linear position/speed, rotation position/speed, vibration level, or some auxiliary setting. In situations where position or speed is possible in a forward or reverse direction 0.5 is assumed to be central or at rest. 
 
-## Advanced Commands
+## Extended Commands
 
 Magnitude commands of the format `X&$$` can be augmented with additional terms to change the ramp time or speed.
 
@@ -65,7 +67,7 @@ Magnitude commands of the format `X&$$` can be augmented with additional terms t
 
 ### Magnitude + Time Interval
 
-Magnitude commands can be augmented with a speed term. This commands the toy to ramp to the specified magnitude over an interval of time, given in milliseconds.
+Magnitude commands can be augmented with a speed term. This commands the toy to linearly ramp to the specified magnitude over an interval of time, given in milliseconds.
 
 eg: `L&$$I£££`
 
@@ -73,21 +75,51 @@ Where `I` (or `i`) allows the effect to be ramped in over an interval of `£££
 
 With this command the channel ramps to the specified level and continues at that level until given further instructions.
 
+Interval commands are recommended for applications where a device is being used to follow a series of timed movements, such as a script.
+
 ### Magnitude + Speed
 
 As an alternative, the rate at which the effect is ramped in can be specified.
 
 `R&$$S£££`
 
-Using `S` (or `s`) allows the effect to be ramped at a speed of `£££` per hundred milliseconds.
+Using `S` (or `s`) allows the effect to be ramped at a speed of `£££` per hundred milliseconds, ie a speed of `1000` will run one axis length in 1 second.
 
 As with time interval, the channel ramps to the specified level and continues at that level until given further instructions.
+
+Speed movements are most useful for applications such as control panels when single commands are issued to a device, such as for setup or telling a device to re-centre itself.
+
+## Smooth motion
+
+### "Ease in" and "Ease out" modifiers
+
+Extended commands can be augmented with "Ease in" - `<` and "Ease out" - `>` modifiers. These modifiers change the linear motion into a quadratic or cubic motion by setting velocity boundary conditions:
+
+- `<` – quadratic curve that starts at zero speed and accelerates toward the end point.
+
+- `>` – quadratic curve that decelerates to zero speed at the end of the move.
+
+- `<>` – cubic-spline movement with zero speed at both the beginning and the end of the move.
+
+These commands are useful for single movements. It is recommended that Gradient commands are used for sequences of movements.
+
+eg: `L0999I2000<>`
+
+### Gradient modifiers
+
+Gradient or `G` commands initiate cubic spline based movements. They obey the same rules as extended commands but introduce a starting and ending velocity to the movement, which gives it a smooth acceleration. The starting velocity is always the current velocity of the axis, the end, arrival, velocity is specified by a parameter marked by `G`.
+
+The `G` arrival velocity number can be positive or negative and has the same units as the `S` parameter described above - a speed of `1000` will run one axis length in 1 second.
+
+ - eg `L09999I2000G-1000` - linear channel 0 to magnitude 0.9999 over 2000 ms, arriving with a velocity of -1000.
+
+If a "G" commanded movement with a non-zero value reaches the end of its movement and no further command has been received the axis enters an automatic deceleration phase, continuing at the current velocity but decelerating and returning to rest at the last commanded point over approximately two seconds. There is never an abrupt end to a "G" movement, so it is therefore not necessary to ensure that commands overlap with previous commands. On the scale of tens of milliseconds a gap between end of movement and a new command arriving are completely unnoticeable.
 
 ## Multiple Channels
 
 Multiple channels can be operated in parallel, and will do so independently of each other.
 
-Multiple commands can be sent at the same time, separated by a space character ‘ ‘, allowing instructions to be readied for multiple `L`, `R` & `V` channels before all are executed by the receipt of a `/n` character. Lag in scripted control can be minimised by sending the next instructions in advance, sending the new line to execute at the desired moment.
+Multiple commands can be sent at the same time, separated by a space character ‘ ‘, allowing instructions to be readied for multiple `L`, `R`, `V` & `A` channels before all are executed by the receipt of a `/n` character. Lag in scripted control can be minimised by sending the next instructions in advance, sending the new line to execute at the desired moment.
 
 Commands addressed to the same channel before a new line character is sent will overwrite previous buffered commands to that channel.
 
@@ -96,6 +128,8 @@ Commands addressed to the same channel before a new line character is sent will 
 To be able to keep up with a live feed, commands will need to have a short, quick fire format, for an instant response.
 
 For the fastest response possible during live control, each command should be followed immediately by a newline (`/n`).
+
+The TCode interpreter code usually contains on-board smoothing algorithms that can correct for small amounts of signal noise and smooth over gaps in the incoming data stream. These algorithms are activated by the arrival of a stream of short commands and disabled by extended commands. It is therefore recommended that short commands are consistently used for live control.
 
 ## Device Commands
 
