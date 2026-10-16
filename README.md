@@ -1,4 +1,6 @@
-# tcode-spec
+# TCode Specification
+**Author:** Tempest Multiaxis  
+**Date:** 12 October 2026
 
 <!--- credit to Tempest & the community. --->
 
@@ -8,7 +10,7 @@ T-code is a protocol for implementing UART serial communications to an adult toy
 
 The toy or “device” will be capable of one or more functions, which are described as Linear motion, Vibration or Rotation “channels”, which can be addressed independently.
 
-Commands are sent to the device in the form of alphanumeric ASCII phrases, which are interpreted by the device, stored in a buffer and executed on the receipt of new line or `/n` character.
+Commands are sent to the device in the form of alphanumeric ASCII phrases, which are interpreted by the device, stored in a buffer and executed on the receipt of new line or `/n` character. Commands can be sent over Serial, Bluetooth or WiFi (UDP).
 
 Version 0.4 extends version 0.3 with support for smooth motion terms that enable cubic-spline and quadratic motion profiles, improving smoothness when chaining movements.
 
@@ -166,6 +168,74 @@ Where:
 
 Note that saved preferences do not change the behaviour of the device itself. They exist as a reference for the driving app or plugin, accessed via the D2 command.
 
+---
+
+# TCode over Bluetooth
+**Companion to the TCode Specification v0.4**  
+**Author:** Tempest Multiaxis  
+**Date:** 16 October 2026
+
+Notes for application authors who wish to connect to a TCode device over BLE.
+
+For TCode over Bluetooth command syntax, axis model, and device commands remain exactly as defined in the main specification. Only the transport differs.
+
+## Service and Characteristic
+
+Devices that implement this extension advertise the following custom service and characteristic. These identifiers were chosen so that existing web-based controllers can discover TCode devices without relying on the generic Nordic UART Service.
+
+| Item | UUID | Properties |
+|------|------|------------|
+| Service | `ff1b451d-3070-4276-9c81-5dc5ea1043bc` | — |
+| Characteristic | `c5f1543e-338d-47a0-8525-01e3c621359d` | READ, WRITE_NR |
+
+- **WRITE_NR** (Write Without Response) is used for all command traffic. It avoids a per-packet ATT acknowledgement and is therefore suitable for streaming.
+- **READ** allows the central to retrieve the most recent value written to the characteristic (typically the last response or status the device chose to store).
+- Notifications are not required and are not part of this standard.
+
+The service UUID must appear in the advertising packet (and preferably also in the scan response) so that Web Bluetooth and other central implementations can filter on it.
+
+### Connection Interval Hints
+
+Devices may advertise preferred connection interval values of `0x06`–`0x12` (approximately 7.5–15 ms). These are advisory only; the central (phone or browser) ultimately selects the interval. In practice most phone connections settle between 15 ms and 30 ms.
+
+## Framing
+
+TCode commands are sent as UTF-8 text exactly as they would be over serial. Multiple commands may be space-separated on a single line. A line is terminated by `\n` or `\r` (or both).
+
+Because BLE delivers data in bursts (typically every 15–30 ms), a single characteristic write often contains one or more complete lines. 
+
+## Short Commands over Bluetooth
+
+Short commands (those that carry no `I`, `S`, or `G` parameter) are legal, but they have an important limitation on this transport.
+
+On-board live-mode smoothing measures the real elapsed time between successive short commands for the same axis. When a BLE burst arrives, many short commands can be processed within a few milliseconds of one another. Intervals of that length are not meaningful to the motion planner.
+
+**Consequently, a device implementing this extension will ignore any short command that arrives for a given axis within 5 ms of the previous short command for that same axis.**
+
+In practical terms:
+
+- If a single BLE burst contains several short commands for the same axis, only the first one is acted upon.
+- Subsequent short commands for that axis inside the same burst are discarded.
+- Commands for other axes, and any extended commands (`I`, `S`, or `G`), are unaffected.
+
+This behaviour keeps the device stable, but it also means that a high-rate stream of short commands (for example 200–300 Hz) will lose the majority of its samples. The on-board smoothing algorithms can still produce continuous motion from the surviving points, yet the result is coarser than the same stream delivered over serial.
+
+### Recommendation
+
+Short commands should be used over Bluetooth only when no alternative exists.
+
+For scripted or high-quality motion **gradient (`G`) commands are strongly preferred**. A gradient command supplies both a target position and an arrival velocity, allowing the device to construct a smooth cubic segment. Gradient commands can therefore be used on the 100-1000ms scale and produce smoother, more predictable motion over BLE than a much higher rate of short commands.
+
+eg: `L05000I300G200 L15000I1000G-100`
+
+---
+
+## Summary for Implementers
+
+1. Discover and connect to the service UUID `ff1b451d-3070-4276-9c81-5dc5ea1043bc`.
+2. Write TCode lines (including the terminating newline) to the characteristic using Write Without Response.
+3. Expect that short commands arriving inside the same BLE burst will be reduced to the first command per axis.
+4. Prefer gradient (`G`) commands whenever the application can generate them.
 
 <!---Images/Resources--->
 
