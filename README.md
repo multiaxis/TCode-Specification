@@ -65,7 +65,7 @@ Magnitude commands of the format `X&$$` can be augmented with additional terms t
 | Command     | Axis    | Channel | Effect                                  |
 | ----------- | ------- | :-----: | --------------------------------------- |
 | `V199I2000` | Vibrate |   `1`   | Ramp to `0.99` over `2000` milliseconds |
-| `L020S10`   | Linear  |   `0`   | Ramp to `0.2` at a rate of `0.1`/sec    |
+| `L020S100`   | Linear  |   `0`   | Ramp to `0.2` at a rate of `0.1`/sec    |
 
 ![Interval and Speed][interval and speed diagram]
 
