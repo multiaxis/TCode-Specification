@@ -67,6 +67,8 @@ Magnitude commands of the format `X&$$` can be augmented with additional terms t
 | `V199I2000` | Vibrate |   `1`   | Ramp to `0.99` over `2000` milliseconds |
 | `L020S10`   | Linear  |   `0`   | Ramp to `0.2` at a rate of `0.1`/sec    |
 
+![Interval and Speed][interval and speed diagram]
+
 ### Magnitude + Time Interval
 
 Magnitude commands can be augmented with a speed term. This commands the toy to linearly ramp to the specified magnitude over an interval of time, given in milliseconds.
@@ -240,3 +242,4 @@ eg: `L05000I300G200 L15000I1000G-100`
 <!---Images/Resources--->
 
 [axis diagram]: ./axes.png
+[interval and speed diagram]: ./intervalspeed.png
