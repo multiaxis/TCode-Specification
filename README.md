@@ -109,6 +109,8 @@ These commands are useful for single movements. It is recommended that Gradient 
 
 eg: `L0999I2000<>`
 
+![Ease in and Ease out][ease in and ease out]
+
 ### Gradient modifiers
 
 Gradient or `G` commands initiate cubic spline based movements. They obey the same rules as extended commands but introduce a starting and ending velocity to the movement, which gives it a smooth acceleration. The starting velocity is always the current velocity of the axis, the end, arrival, velocity is specified by a parameter marked by `G`.
@@ -243,3 +245,4 @@ eg: `L05000I300G200 L15000I1000G-100`
 
 [axis diagram]: ./axes.png
 [interval and speed diagram]: ./intervalspeed.png
+[ease in and ease out]: ./easeineaseout.png
