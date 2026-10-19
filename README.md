@@ -123,7 +123,15 @@ For most scripts the points represent turning points where motion stops and retu
 
 eg `R08I500G0` - rotation channel 0 to magnitude 0.8 over 500 ms, arriving with a velocity of 0.
 
-If a "G" commanded movement with a non-zero value reaches the end of its movement and no further command has been received the axis enters an automatic deceleration phase, continuing at the current velocity but decelerating and returning to rest at the last commanded point over approximately two seconds. There is never an abrupt end to a "G" movement, so it is therefore not necessary to ensure that commands overlap with previous commands. On the scale of tens of milliseconds a gap between end of movement and a new command arriving are completely unnoticeable.
+If a `G` commanded movement with a non-zero value reaches the end of its movement and no further command has been received the axis enters an automatic deceleration phase, continuing at the current velocity but decelerating and returning to rest at the last commanded point over approximately two seconds. There is never an abrupt end to a `G` movement, so it is therefore not necessary to ensure that commands overlap with previous commands. On the scale of tens of milliseconds a gap between end of movement and a new command arriving are completely unnoticeable.
+
+![Gradients][gradients]
+
+Gradient commands can be used in many different ways, but predominantly they will be used for script playback. If a script consists of a series of position-at-time points the recommended algorithm for constructing `G` commands is as follows:
+
+- For a reversal point, ie the motion stops and reverses direction, set the `G` value to `0`.
+
+- For an intermediate point, where the movement does not change direction, set the `G` value to be the average value of the straight line gradient from the previous point to the current point, and the current point to the next point.
 
 ## Multiple Channels
 
@@ -246,3 +254,4 @@ eg: `L05000I300G200 L15000I1000G-100`
 [axis diagram]: ./axes.png
 [interval and speed diagram]: ./intervalspeed.png
 [ease in and ease out]: ./easeineaseout.png
+[gradients]: ./gradients.png
